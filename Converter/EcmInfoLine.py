@@ -1,6 +1,6 @@
 # EcmInfoLine Converter
-# Copyright (c) 2boom 2014-22
-# v.0.9-r2
+# Copyright (c) 2boom 2014-16
+# v.0.9-r3
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-# 01.01.2022 - seprate ip stream vs fta broadcast
+#2022
 
 from enigma import iServiceInformation
 from Components.Converter.Converter import Converter
@@ -35,20 +35,20 @@ class EcmInfoLine(Poll, Converter, object):
 	def __init__(self, type):
 		Converter.__init__(self, type)
 		Poll.__init__(self)
-		if type is 'Auto':
+		if type == 'Auto':
 			self.type = self.Auto
 		elif type.startswith('Format:'):
 			self.type = self.Format
 			self.paramert_str = type
-		elif type is 'Crypt':
+		elif type == 'Crypt':
 			self.type = self.Crypt
-		elif type is 'EMU':
+		elif type == 'EMU':
 			self.type = self.EMU
-		elif type is 'NET':
+		elif type == 'NET':
 			self.type = self.NET
-		elif type is 'SCI':
+		elif type == 'SCI':
 			self.type = self.SCI
-		elif type is 'FTA':
+		elif type == 'FTA':
 			self.type = self.FTA
 		else:
 			self.type = self.PreDefine
@@ -210,9 +210,9 @@ class EcmInfoLine(Poll, Converter, object):
 		# %C - caid, %P - Provider, %T - time, %U -using, %R - Reader, %S - source, %H - hops, %O - port, %L - Protocol
 		iscrypt = info.getInfo(iServiceInformation.sIsCrypted)
 		if self.type is self.Auto or self.type is self.Format or self.type is self.PreDefine:
+			if service.streamed() is not None:
+				return  _('Internet broadcasting')
 			if not iscrypt or iscrypt == -1:
-				if service.streamed() is not None:
-					return  _('Internet broadcasting')
 				return _('Free-to-air')
 			elif iscrypt and not os.path.isfile('/tmp/ecm.info'):
 				return _('No parse cannot emu')
@@ -225,7 +225,7 @@ class EcmInfoLine(Poll, Converter, object):
 
 		if not self.out_data.get('source', '') is 'emu' and os.path.isfile('/tmp/ecm.info'):
 			try:
-				if int((time.time() - os.stat("/tmp/ecm.info").st_mtime)) > 10:
+				if int((time.time() - os.stat("/tmp/ecm.info").st_mtime)) > 14:
 					return _('No parse cannot emu')
 			except:
 				return _('No parse cannot emu')
