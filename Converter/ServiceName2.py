@@ -640,7 +640,10 @@ class ServiceName2(Converter, object):
 						ret += refstr
 				elif f == 'S':	# %S - Satellite
 					if self.isStream:
-						ret += _("Stream:") + " " + refstr.replace("%3a", ":").rsplit("://", 1)[1].split("/")[0].split(":")[0]
+						try:
+							ret += _("Stream:") + " " + refstr.replace("%3a", ":").rsplit("://", 1)[1].split("/")[0].split(":")[0]
+						except:
+							pass
 					else:
 						if self.ref:
 							ret += self.getSatelliteName(self.ref)
