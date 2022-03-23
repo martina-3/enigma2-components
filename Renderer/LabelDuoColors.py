@@ -1,6 +1,6 @@
-# LabelDuoColors Render
-# Copyright (c) 2boom 2014
-# v.0.2-r1
+﻿# LabelDuoColors Render
+# Copyright (c) 2boom 2014-22
+# v.0.3-r0
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -15,6 +15,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 # 22.12.2018 code optimization mod by Sirius
+# 05.01.2022 space fix - 2boom
+# 07.01.2022 add '*' and '|' as separator & code optimization
+
 
 from Components.VariableText import VariableText
 from Renderer import Renderer
@@ -26,16 +29,13 @@ class LabelDuoColors(VariableText, Renderer):
 		Renderer.__init__(self)
 		VariableText.__init__(self)
 		self.colors = self.firstColor = self.secondColor = self.tmptext = self.text = ""
+		self.separatorsymbol = '|*'
+		self.separator = '|'
 
 	GUI_WIDGET = eLabel
 
 	def convert_color(self, color_in):
-		hex_color = {'0':'0', '1':'1', '2':'2', '3':'3', '4':'4', '5':'5', '6':'6', '7':'7', '8':'8', '9':'9',\
-			'a':':', 'b':';', 'c':'<', 'd':'=', 'e':'>', 'f':'?', 'A':':', 'B':';', 'C':'<', 'D':'=', 'E':'>', 'F':'?'}
-		color_out = '\c'
-		for i in range(1, len(color_in)):
-			color_out += hex_color.get(color_in[i])
-		return color_out
+		return '\c' + color_in.lower().replace('#','').replace('a',':').replace('b',';').replace('c','<').replace('d','=').replace('e','>').replace('f','?')
 
 	def applySkin(self, desktop, parent):
 		attribs = []
@@ -45,8 +45,6 @@ class LabelDuoColors(VariableText, Renderer):
 			else:
 				attribs.append((attrib, value))
 		self.skinAttributes = attribs
-		self.firstColor = self.convert_color(self.colors.split(',')[0].strip())
-		self.secondColor = self.convert_color(self.colors.split(',')[-1].strip())
 		return Renderer.applySkin(self, desktop, parent)
 		
 	def connect(self, source):
@@ -55,16 +53,38 @@ class LabelDuoColors(VariableText, Renderer):
 
 	def changed(self, what):
 		self.tmptext = self.text = ''
+		self.firstColor = self.convert_color(self.colors.split(',')[0].strip())
+		self.secondColor = self.convert_color(self.colors.split(',')[-1].strip())
 		if what[0] is self.CHANGED_CLEAR:
 			self.text = ''
 		else:
 			self.text = ''
+		for i in range(len(self.separatorsymbol)):
+			if self.separatorsymbol[i] in self.source.text:
+				self.separator = self.separatorsymbol[i]
+			
+		if self.separator in self.source.text:
+			for i in range(self.source.text.count(self.separator) + 1):
+				try:
+					if i % 2 is 0: 
+						self.tmptext += '%s%s' % (self.firstColor, self.source.text.split(self.separator)[i])
+					else:
+						if i % 2 is 0: 
+							self.tmptext += '%s%s%s' % (self.secondColor, self.separator, self.source.text.split(self.separator)[i])
+						else:
+							self.tmptext += '%s%s%s%s' % (self.secondColor, self.separator, self.source.text.split(self.separator)[i], self.separator)
+				except:
+					pass
+			self.tmptext = self.tmptext.rstrip(self.separator)
+				
+		else:
 			for i in range(len(self.source.text.split())):
 				try:
 					if i % 2 is 0: 
-						self.tmptext += self.firstColor + ' ' + self.source.text.split()[i] + '  '
+						self.tmptext += '%s%s ' % (self.firstColor, self.source.text.split()[i])
 					else:
-						self.tmptext += self.secondColor + self.source.text.split()[i] + '   '
+						self.tmptext += '%s%s  ' % (self.secondColor, self.source.text.split()[i])
 				except:
 					pass
-			self.text = self.tmptext.strip()
+		#self.text = ' '.join(self.tmptext.strip().replace('_', ' ').split())
+		self.text = self.tmptext.strip().replace('_', ' ')
