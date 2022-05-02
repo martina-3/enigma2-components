@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-#2022
+# 2022 add internet broadcast
 
 from enigma import iServiceInformation
 from Components.Converter.Converter import Converter
