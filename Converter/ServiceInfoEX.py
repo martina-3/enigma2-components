@@ -1,6 +1,6 @@
 # ServiceInfoEX
 # Copyright (c) 2boom 2013-22
-# v.1.4.6
+# v.1.5.0
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -19,6 +19,7 @@
 # 25.12.2018 add support for gamma values mod by Sirius
 # 02.01.2022 fix vsize output in format string - 2boom
 # 14.01.2022 fix fps data, fix combotype output (vsize & avtype), bit recode - 2boom
+# 23.05.2022 pli 8.2 fix
 
 from Poll import Poll
 from Components.Converter.Converter import Converter
@@ -26,6 +27,7 @@ from enigma import iServiceInformation, iPlayableService
 from Components.config import config
 from Components.Element import cached
 from Tools.Directories import fileExists
+from Screens.InfoBarGenerics import hasActiveSubservicesForCurrentChannel
 
 if fileExists("/etc/issue"):
 	image = ''
@@ -389,24 +391,33 @@ class ServiceInfoEX(Poll, Converter, object):
 		elif self.type == self.IS_WIDESCREEN:
 			return info.getInfo(iServiceInformation.sAspect) in WIDESCREEN
 		elif self.type == self.SUBSERVICES_AVAILABLE:
-			subservices = service.subServices()
-			return subservices and subservices.getNumberOfSubservices() > 0
+			return hasActiveSubservicesForCurrentChannel(service)	
 		elif self.type == self.HAS_HBBTV:
-			try:
-				return info.getInfoString(iServiceInformation.sHBBTVUrl) != ""
-			except:
-				pass
+			return info.getInfoString(iServiceInformation.sHBBTVUrl) != ""
 		elif self.type == self.AUDIOTRACKS_AVAILABLE:
 			audio = service.audioTracks()
-			return audio and audio.getNumberOfTracks() > 1
+			if audio:
+				n = audio.getNumberOfTracks()
+				idx = 0
+				while idx < n:
+					i = audio.getTrackInfo(idx)
+					description = i.getDescription()
+					if description in ("AC3", "AC3+", "DTS", "DTS-HD", "AC-3"):
+						if self.type == self.IS_MULTICHANNEL:
+							return True
+						elif self.type == self.IS_STEREO:
+							return False
+					idx += 1
+				if self.type == self.IS_MULTICHANNEL:
+					return False
+				elif self.type == self.IS_STEREO:
+					return True
+			return False
 		elif self.type == self.SUBTITLES_AVAILABLE:
 			subtitle = service and service.subtitle()
-			subtitlelist = subtitle and subtitle.getSubtitleList()
-			if subtitlelist:
-				return len(subtitlelist) > 0
-			return False
+			return bool(subtitle and subtitle.getSubtitleList())
 		elif self.type == self.EDITMODE:
-			return hasattr(self.source, "editmode") and not not self.source.editmode
+			return bool(hasattr(self.source, "editmode") and self.source.editmode)
 		elif self.type == self.IS_SATELLITE:
 			if type == 'DVB-S':
 				return True
@@ -444,7 +455,10 @@ class ServiceInfoEX(Poll, Converter, object):
 				if self.tpdata.get('system', 0) is 1:
 					return True
 		elif self.type == self.DMXstatus:
-			return config.av.downmix_ac3.value
+			if config.av.downmix_ac3.value:
+				return True
+			else:
+				return False
 		return False
 	boolean = property(getBoolean)
 
