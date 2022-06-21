@@ -20,7 +20,8 @@
 
 
 from Components.VariableText import VariableText
-from Renderer import Renderer
+#from Renderer import Renderer
+from Components.Renderer.Renderer import Renderer
 
 from enigma import eLabel
 
@@ -55,7 +56,7 @@ class LabelDuoColors(VariableText, Renderer):
 		self.tmptext = self.text = ''
 		self.firstColor = self.convert_color(self.colors.split(',')[0].strip())
 		self.secondColor = self.convert_color(self.colors.split(',')[-1].strip())
-		if what[0] is self.CHANGED_CLEAR:
+		if what[0] == self.CHANGED_CLEAR:
 			self.text = ''
 		else:
 			self.text = ''
@@ -66,10 +67,10 @@ class LabelDuoColors(VariableText, Renderer):
 		if self.separator in self.source.text:
 			for i in range(self.source.text.count(self.separator) + 1):
 				try:
-					if i % 2 is 0: 
+					if i % 2 == 0: 
 						self.tmptext += '%s%s' % (self.firstColor, self.source.text.split(self.separator)[i])
 					else:
-						if i % 2 is 0: 
+						if i % 2 == 0: 
 							self.tmptext += '%s%s%s' % (self.secondColor, self.separator, self.source.text.split(self.separator)[i])
 						else:
 							self.tmptext += '%s%s%s%s' % (self.secondColor, self.separator, self.source.text.split(self.separator)[i], self.separator)
@@ -80,11 +81,11 @@ class LabelDuoColors(VariableText, Renderer):
 		else:
 			for i in range(len(self.source.text.split())):
 				try:
-					if i % 2 is 0: 
+					if i % 2 == 0: 
 						self.tmptext += '%s%s ' % (self.firstColor, self.source.text.split()[i])
 					else:
-						self.tmptext += '%s%s  ' % (self.secondColor, self.source.text.split()[i])
+						self.tmptext += '%s%s ' % (self.secondColor, self.source.text.split()[i])
 				except:
 					pass
-		#self.text = ' '.join(self.tmptext.strip().replace('_', ' ').split())
-		self.text = self.tmptext.strip().replace('_', ' ')
+		self.text = '  '.join(self.tmptext.strip().replace('_', ' ').split())
+		#self.text = self.tmptext.strip().replace('_', ' ')

@@ -30,7 +30,8 @@
 # 08.05.2016 add 5001, 5002 stream id
 # 16.11.2018 fix search Paths (by Sirius, thx Taapat)
 
-from Renderer import Renderer 
+from Components.Renderer.Renderer import Renderer
+#from Renderer import Renderer 
 from enigma import ePixmap
 from Tools.Directories import SCOPE_SKIN_IMAGE, SCOPE_CURRENT_SKIN, SCOPE_PLUGINS, resolveFilename 
 import os
@@ -73,33 +74,33 @@ class PiconUni(Renderer):
 	def changed(self, what):
 		if self.instance:
 			pngname = ''
-			if not what[0] is self.CHANGED_CLEAR:
+			if not what[0] == self.CHANGED_CLEAR:
 				sname = self.source.text
 				sname = sname.upper().replace('.', '').replace('\xc2\xb0', '')
-				print sname
+				#print sname
 				#if sname.startswith('4097'):
 				if not sname.startswith('1'):
 					sname = sname.replace('4097', '1', 1).replace('5001', '1', 1).replace('5002', '1', 1)
 				if ':' in sname:
 					sname = '_'.join(sname.split(':')[:10])
 				pngname = self.nameCache.get(sname, '')
-				if pngname is '':
+				if pngname == '':
 					pngname = self.findPicon(sname)
-					if not pngname is '':
+					if not pngname == '':
 						self.nameCache[sname] = pngname
-			if pngname is '':
+			if pngname == '':
 				pngname = self.nameCache.get('default', '')
-				if pngname is '':
+				if pngname == '':
 					pngname = self.findPicon('picon_default')
-					if pngname is '':
+					if pngname == '':
 						tmp = resolveFilename(SCOPE_CURRENT_SKIN, 'picon_default.png')
 						if os.path.isfile(tmp):
 							pngname = tmp
 						else:
 							pngname = resolveFilename(SCOPE_SKIN_IMAGE, 'skin_default/picon_default.png')
 					self.nameCache['default'] = pngname
-			if not self.pngname is pngname:
-				if self.scale is '0':
+			if not self.pngname == pngname:
+				if self.scale == '0':
 					if pngname:
 						self.instance.setScale(1)
 						self.instance.setPixmapFromFile(pngname)
