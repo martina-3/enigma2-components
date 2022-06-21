@@ -15,10 +15,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 # 
 # 25.11.2018 code optimization mod by Sirius
+# 27.05.2022 py3 fix, etools support
 
-from Poll import Poll
-from enigma import iServiceInformation
 from Components.Converter.Converter import Converter
+from Components.Converter.Poll import Poll
+from enigma import iServiceInformation
 from Components.ConfigList import ConfigListScreen
 from Components.config import config, getConfigListEntry, ConfigText, ConfigPassword, ConfigClock, ConfigSelection, ConfigSubsection, ConfigYesNo, configfile, NoSave
 from Components.Element import cached
@@ -40,14 +41,20 @@ class EmuName(Poll, Converter, object):
 		camdname = cardname = camdlist = None
 		# Alternative SoftCam Manager
 		if fileExists("/usr/lib/enigma2/python/Plugins/Extensions/AlternativeSoftCamManager/plugin.pyo"):
-			if config.plugins.AltSoftcam.actcam.value is not None:
+			if config.plugins.AltSoftcam.actcam.value != None:
 				camdname = StringIO(config.plugins.AltSoftcam.actcam.value)
 			else:
 				camdname = None
 		# E-Panel
 		elif fileExists("/usr/lib/enigma2/python/Plugins/Extensions/epanel/plugin.pyo"):
-			if config.plugins.epanel.activeemu.value is not None:
+			if config.plugins.epanel.activeemu.value != None:
 				camdname = StringIO(config.plugins.epanel.activeemu.value)
+			else:
+				camdname = None
+		# E-Tools
+		elif fileExists("/usr/lib/enigma2/python/Plugins/Extensions/etools/plugin.pyo"):
+			if config.plugins.etools.activeemu.value != None:
+				camdname = StringIO(config.plugins.etools.activeemu.value)
 			else:
 				camdname = None
 		# VTI
