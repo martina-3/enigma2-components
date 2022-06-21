@@ -1,6 +1,6 @@
 # ServiceInfoEX
 # Copyright (c) 2boom 2013-22
-# v.1.5.0
+# v.1.5.5
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -19,9 +19,10 @@
 # 25.12.2018 add support for gamma values mod by Sirius
 # 02.01.2022 fix vsize output in format string - 2boom
 # 14.01.2022 fix fps data, fix combotype output (vsize & avtype), bit recode - 2boom
-# 23.05.2022 pli 8.2 fix
+# 23.05.2022 pli 8.2 fix - 2boom
+# 01.06.2022 add nongamma (NGM), bool sGamma add - 2boom
 
-from Poll import Poll
+from Components.Converter.Poll import Poll
 from Components.Converter.Converter import Converter
 from enigma import iServiceInformation, iPlayableService
 from Components.config import config
@@ -87,7 +88,12 @@ class ServiceInfoEX(Poll, Converter, object):
 	volume = 43
 	volumedata = 44
 	DMXstatus = 45
-
+	IsRDS = 46
+	IsNGM = 47
+	IsHDR10 = 48
+	IsHDR = 49
+	IsHLG = 50
+	IsSDR = 51
 	def __init__(self, type):
 		Converter.__init__(self, type)
 		Poll.__init__(self)
@@ -183,6 +189,18 @@ class ServiceInfoEX(Poll, Converter, object):
 			self.type = self.DMXstatus
 		elif type == "IsVolumeData":
 			self.type = self.volumedata
+		elif type == "IsRDS":
+			self.type = self.IsRDS
+		elif type == "IsNGM":
+			self.type = self.IsNGM
+		elif type == "IsSDR":
+			self.type = self.IsSDR
+		elif type == "IsHDR":
+			self.type = self.IsHDR
+		elif type == "IsHDR10":
+			self.type = self.IsHDR10
+		elif type == "IsHLG":
+			self.type = self.IsHLG
 		else:
 			self.type = self.format
 			self.sfmt = type[:]
@@ -257,36 +275,37 @@ class ServiceInfoEX(Poll, Converter, object):
 					self.stream['atype'] = str(audio.getTrackInfo(audio.getCurrentTrack()).getDescription()).replace(" audio","").replace(" ","_")
 			self.stream['vtype'] = codec_data[info.getInfo(iServiceInformation.sVideoType)]
 			self.stream['avtype'] = self.stream['vtype'] + '/' + self.stream['atype']
-			if self.stream['avtype'].strip() is '/':
+			if self.stream['avtype'].strip() == '/':
 				self.stream['avtype'] = ''
 			elif self.stream['avtype'].strip().startswith('/'):
 				self.stream['avtype'] = self.stream['atype']
 			elif self.stream['avtype'].strip().endswith('/'):
 				self.stream['avtype'] = self.stream['vtype']
-			fps = (info.getInfo(iServiceInformation.sFrameRate) + 500) / 1000
+			#fps = (info.getInfo(iServiceInformation.sFrameRate) + 500) / 1000, 0
+			fps = self.getServiceInfoString(info, iServiceInformation.sFrameRate, lambda x: (x + 500) / 1000)
 			if not fps:
 				try:
-					fps = (int(open("/proc/stb/vmpeg/0/framerate", "r").read()) + 500) / 1000
+					fps = int(int(open("/proc/stb/vmpeg/0/framerate", "r").read()) + 500) / 1000
 				except:
 					pass
 			self.stream['fps'] = '%s' % str(fps)
 			self.stream['tbps'] = self.getServiceInfoString(info, iServiceInformation.sTransferBPS, lambda x: "%d kB/s" % (x/1024))
 			self.stream['vsize'] = '%sx%s' % (self.stream['xres'], self.stream['yres'])
-			if len(self.stream['vsize'].strip()) is 1:
+			if len(self.stream['vsize'].strip()) == 1:
 				self.stream['vsize'] = ''
 			elif self.stream['vsize'].strip().startswith('0x'):
 				self.stream['vsize'] = ''
 			self.tpdata = info.getInfoObject(iServiceInformation.sTransponderData)
 			if self.tpdata:
 				self.stream['ttype'] = self.tpdata.get('tuner_type', '')
-				if self.stream['ttype'] == 'DVB-S' and service.streamed() is None:
-					if self.tpdata.get('system', 0) is 1:
+				if self.stream['ttype'] == 'DVB-S' and service.streamed() == None:
+					if self.tpdata.get('system', 0) == 1:
 						self.stream['ttype'] = 'DVB-S2'
-				elif self.stream['ttype'] == 'DVB-C' and service.streamed() is None:
-					if self.tpdata.get('system', 0) is 1:
+				elif self.stream['ttype'] == 'DVB-C' and service.streamed() == None:
+					if self.tpdata.get('system', 0) == 1:
 						self.stream['ttype'] = 'DVB-C2'
-				elif self.stream['ttype'] == 'DVB-T' and service.streamed() is None:
-					if self.tpdata.get('system', 0) is 1:
+				elif self.stream['ttype'] == 'DVB-T' and service.streamed() == None:
+					if self.tpdata.get('system', 0) == 1:
 						self.stream['ttype'] = 'DVB-T2'
 			else:
 				self.stream['ttype'] = 'IP-TV'
@@ -376,6 +395,12 @@ class ServiceInfoEX(Poll, Converter, object):
 		if self.type == self.HAS_TELETEXT:
 			tpid = info.getInfo(iServiceInformation.sTXTPID)
 			return tpid != -1
+		elif self.type == self.IsRDS:
+			if info.getInfo(iServiceInformation.sVideoHeight) > 0:
+				return False
+			else:
+				return True
+
 		elif self.type == self.IS_MULTICHANNEL:
 			audio = service.audioTracks()
 			if audio:
@@ -388,6 +413,18 @@ class ServiceInfoEX(Poll, Converter, object):
 			return info.getInfo(iServiceInformation.sIsCrypted) == 1
 		elif self.type == self.IS_FTA:
 			return info.getInfo(iServiceInformation.sIsCrypted) == 0
+		elif self.type == self.IsNGM:	
+			if info.getInfo(iServiceInformation.sGamma) < 0:
+				return True
+			return False
+		elif self.type == self.IsSDR:
+			return info.getInfo(iServiceInformation.sGamma) == 0
+		elif self.type == self.IsHDR:
+			return info.getInfo(iServiceInformation.sGamma) == 1
+		elif self.type == self.IsHDR10:
+			return info.getInfo(iServiceInformation.sGamma) == 2
+		elif self.type == self.IsHLG:
+			return info.getInfo(iServiceInformation.sGamma) == 3
 		elif self.type == self.IS_WIDESCREEN:
 			return info.getInfo(iServiceInformation.sAspect) in WIDESCREEN
 		elif self.type == self.SUBSERVICES_AVAILABLE:
@@ -428,34 +465,34 @@ class ServiceInfoEX(Poll, Converter, object):
 			if type == 'DVB-T':
 				return True
 		elif self.type == self.IS_STREAMTV:
-			if service.streamed() is not None:
+			if service.streamed() != None:
 				return True
 		elif self.type == self.IS_SATELLITE_S:
-			if type == 'DVB-S' and service.streamed() is None:
-				if self.tpdata.get('system', 0) is 0:
+			if type == 'DVB-S' and service.streamed() == None:
+				if self.tpdata.get('system', 0) == 0:
 					return True
 		elif self.type == self.IS_SATELLITE_S2:
-			if type == 'DVB-S' and service.streamed() is None:
-				if self.tpdata.get('system', 0) is 1:
+			if type == 'DVB-S' and service.streamed() == None:
+				if self.tpdata.get('system', 0) == 1:
 					return True
 		elif self.type == self.IS_CABLE_C:
-			if type == 'DVB-C' and service.streamed() is None:
-				if self.tpdata.get('system', 0) is 0:
+			if type == 'DVB-C' and service.streamed() == None:
+				if self.tpdata.get('system', 0) == 0:
 					return True
 		elif self.type == self.IS_CABLE_C2:
-			if type == 'DVB-C' and service.streamed() is None:
-				if self.tpdata.get('system', 0) is 1:
+			if type == 'DVB-C' and service.streamed() == None:
+				if self.tpdata.get('system', 0) == 1:
 					return True
 		elif self.type == self.IS_TERRESTRIAL_T:
-			if type == 'DVB-T' and service.streamed() is None:
-				if self.tpdata.get('system', 0) is 0:
+			if type == 'DVB-T' and service.streamed() == None:
+				if self.tpdata.get('system', 0) == 0:
 					return True
 		elif self.type == self.IS_TERRESTRIAL_T2:
-			if type == 'DVB-T' and service.streamed() is None:
-				if self.tpdata.get('system', 0) is 1:
+			if type == 'DVB-T' and service.streamed() == None:
+				if self.tpdata.get('system', 0) == 1:
 					return True
 		elif self.type == self.DMXstatus:
-			if config.av.downmix_ac3.value:
+			if config.av.downmix_ac3.value == True or config.av.downmix_ac3.value == "downmix":
 				return True
 			else:
 				return False
