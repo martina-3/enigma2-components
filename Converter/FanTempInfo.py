@@ -1,6 +1,6 @@
 # FanTempInfo Converter
-# Copyright (c) 2boom 2012-18
-# v.0.6-r1
+# Copyright (c) 2boom 2012-22
+# v.0.6-r2
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -16,8 +16,9 @@
 #
 # 10.12.2018 code optimization mod by Sirius
 # 05.01.2019 fix error AX HD 51 mod by Sirius
+# 27.05.2022 py3 fix
 
-from Poll import Poll
+from Components.Converter.Poll import Poll
 from Components.Converter.Converter import Converter
 from Components.Element import cached
 import os
@@ -45,7 +46,7 @@ class FanTempInfo(Poll, Converter, object):
 	@cached
 	def getText(self):
 		info = "N/A"
-		if self.type is self.FanInfo or self.type is self.TxtFanInfo:
+		if self.type == self.FanInfo or self.type == self.TxtFanInfo:
 			try:
 				if os.path.exists("/proc/stb/fp/fan_speed"):
 					info = open("/proc/stb/fp/fan_speed").read().strip('\n')
@@ -53,9 +54,9 @@ class FanTempInfo(Poll, Converter, object):
 					info = open("/proc/stb/fp/fan_pwm").read().strip('\n')
 			except:
 				info = "N/A"
-			if self.type is self.TxtFanInfo:
+			if self.type == self.TxtFanInfo:
 				info = "Fan: " + info
-		elif self.type is self.TempInfo or self.type is self.TxtTempInfo:
+		elif self.type == self.TempInfo or self.type == self.TxtTempInfo:
 			try:
 				if os.path.exists("/proc/stb/sensors/temp0/value") and os.path.exists("/proc/stb/sensors/temp0/unit"):
 					info = "%s%s%s" % (open("/proc/stb/sensors/temp0/value").read().strip('\n'), unichr(176).encode("latin-1"), open("/proc/stb/sensors/temp0/unit").read().strip('\n'))
@@ -69,14 +70,14 @@ class FanTempInfo(Poll, Converter, object):
 				info = "N/A"
 			if info.startswith('0'):
 				info = "N/A"
-			if self.type is self.TxtTempInfo:
+			if self.type == self.TxtTempInfo:
 				info = "Temp: " + info
 		return info
 
 	text = property(getText)
 
 	def changed(self, what):
-		if what[0] is self.CHANGED_POLL:
+		if what[0] == self.CHANGED_POLL:
 			self.downstream_elements.changed(what)
-		elif not what[0] is self.CHANGED_SPECIFIC:
+		elif not what[0] == self.CHANGED_SPECIFIC:
 			Converter.changed(self, what)
