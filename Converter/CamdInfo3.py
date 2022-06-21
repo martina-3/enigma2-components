@@ -1,11 +1,12 @@
-# 2boom 2011-16
+# 2boom 2011-22
 # CamdInfo3 - Converter
 # 
 #	<convert type="CamdInfo3">Camd</convert>
 # 
 # 25.11.2018 code optimization mod by Sirius
+# 27.05.22 fix
 
-from Poll import Poll
+from Components.Converter.Poll import Poll
 from enigma import iServiceInformation
 from Components.Converter.Converter import Converter
 from Components.ConfigList import ConfigListScreen
@@ -38,19 +39,19 @@ class CamdInfo3(Poll, Converter, object):
 			return ""
 		# Alternative SoftCam Manager
 		if fileExists("/usr/lib/enigma2/python/Plugins/Extensions/AlternativeSoftCamManager/plugin.pyo"):
-			if config.plugins.AltSoftcam.actcam.value is not None:
+			if config.plugins.AltSoftcam.actcam.value != None:
 				return config.plugins.AltSoftcam.actcam.value
 			else:
 				return None
 		# E-Panel
 		elif fileExists("/usr/lib/enigma2/python/Plugins/Extensions/epanel/plugin.pyo"):
-			if config.plugins.epanel.activeemu.value is not None:
+			if config.plugins.epanel.activeemu.value != None:
 				return config.plugins.epanel.activeemu.value
 			else:
 				return None
 		# PKT
 		elif fileExists("/usr/lib/enigma2/python/Plugins/Extensions/PKT/plugin.pyo"):
-			if config.plugins.emuman.cam.value is not None:
+			if config.plugins.emuman.cam.value != None:
 				return config.plugins.emuman.cam.value
 			else:
 				return None
@@ -160,17 +161,17 @@ class CamdInfo3(Poll, Converter, object):
 						serlist = "%s" % nameser[1].split('"')[1]
 					except:
 						pass
-					if serlist is not None and camdlist is not None:
+					if serlist != None and camdlist != None:
 						return ("%s %s" % (serlist, camdlist))
-					elif camdlist is not None:
+					elif camdlist != None:
 						return "%s" % camdlist
-					elif serlist is not None:
+					elif serlist != None:
 						return "%s" % serlist
 					return ""
 		else:
 			return None
 
-		if serlist is not None:
+		if serlist != None:
 			try:
 				cardserver = ""
 				for current in serlist.readlines():
@@ -181,7 +182,7 @@ class CamdInfo3(Poll, Converter, object):
 		else:
 			cardserver = " "
 
-		if camdlist is not None:
+		if camdlist != None:
 			try:
 				emu = ""
 				for current in camdlist.readlines():

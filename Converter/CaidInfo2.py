@@ -1,6 +1,6 @@
 #
 #  CaidInfo2 - Converter
-#  ver 1.2.5 02.08.2016
+#  ver 1.2.6 27.05.2022
 #
 #  Coded by bigroma & 2boom
 
@@ -8,7 +8,7 @@ from Components.Converter.Converter import Converter
 from enigma import iServiceInformation, iPlayableService
 from Tools.Directories import fileExists
 from Components.Element import cached
-from Poll import Poll
+from Components.Converter.Poll import Poll
 import os
 
 info = {}
@@ -193,11 +193,11 @@ class CaidInfo2(Poll, Converter, object):
 			return False
 
 		caids = info.getInfoObject(iServiceInformation.sCAIDs)
-		if self.type is self.IS_FTA:
+		if self.type == self.IS_FTA:
 			if caids:
 				return False
 			return True
-		if self.type is self.IS_CRYPTED:
+		if self.type == self.IS_CRYPTED:
 			if caids:
 				return True
 			return False
