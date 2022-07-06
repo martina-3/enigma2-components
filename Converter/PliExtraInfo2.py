@@ -6,7 +6,7 @@ from Components.Element import cached
 from Components.config import config
 from Tools.Transponder import ConvertToHumanReadable, getChannelNumber
 from Tools.GetEcmInfo import GetEcmInfo
-from Poll import Poll
+from Components.Converter.Poll import Poll
 from os import popen
 
 def addspace(text):
