@@ -1,10 +1,12 @@
 # Embedded file name: /usr/lib/enigma2/python/Components/Renderer/MyAnimmenurend.py
 from Tools.LoadPixmap import LoadPixmap
 from Components.Pixmap import Pixmap
-from Renderer import Renderer
+from Components.Renderer.Renderer import Renderer
 from Tools.Directories import fileExists
 from Components.config import config
 from enigma import ePixmap, eTimer, ePicLoad
+import os
+
 
 class MyAnimmenurend(Renderer):
 
