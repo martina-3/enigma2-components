@@ -5,8 +5,6 @@ from Components.Renderer.Renderer import Renderer
 from Tools.Directories import fileExists
 from Components.config import config
 from enigma import ePixmap, eTimer, ePicLoad
-import os
-
 
 class MyAnimmenurend(Renderer):
 

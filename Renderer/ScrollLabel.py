@@ -2,7 +2,7 @@
 #Embedded file name: /usr/lib/enigma2/python/Components/Renderer/ScrollLabel.py
 import skin
 from Components.VariableText import VariableText
-from Renderer import Renderer
+from Components.Renderer.Renderer import Renderer
 from enigma import eLabel, eWidget, ePoint, eSize, gFont, fontRenderClass, eTimer
 
 class ScrollLabel(VariableText, Renderer):
