@@ -76,7 +76,7 @@ class PiconUni(Renderer):
 			pngname = ''
 			if not what[0] == self.CHANGED_CLEAR:
 				sname = self.source.text
-				sname = sname.upper().replace('.', '').replace('\xc2\xb0', '')
+				sname = sname.upper().replace('.', '').replace(chr(176), '')
 				#print sname
 				#if sname.startswith('4097'):
 				if not sname.startswith('1'):
