@@ -1,6 +1,6 @@
 # ServiceInfoEX
 # Copyright (c) 2boom 2013-22
-# v.1.5.5
+# v.1.5.6
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -21,6 +21,7 @@
 # 14.01.2022 fix fps data, fix combotype output (vsize & avtype), bit recode - 2boom
 # 23.05.2022 pli 8.2 fix - 2boom
 # 01.06.2022 add nongamma (NGM), bool sGamma add - 2boom
+# 28.06.22 - py3 fps fix
 
 from Components.Converter.Poll import Poll
 from Components.Converter.Converter import Converter
@@ -281,11 +282,10 @@ class ServiceInfoEX(Poll, Converter, object):
 				self.stream['avtype'] = self.stream['atype']
 			elif self.stream['avtype'].strip().endswith('/'):
 				self.stream['avtype'] = self.stream['vtype']
-			#fps = (info.getInfo(iServiceInformation.sFrameRate) + 500) / 1000, 0
-			fps = self.getServiceInfoString(info, iServiceInformation.sFrameRate, lambda x: (x + 500) / 1000)
-			if not fps:
+			fps = (info.getInfo(iServiceInformation.sFrameRate) + 500) // 1000
+			if not fps or fps == -1:
 				try:
-					fps = int(int(open("/proc/stb/vmpeg/0/framerate", "r").read()) + 500) / 1000
+					fps = (int(open("/proc/stb/vmpeg/0/framerate", "r").read()) + 500) // 1000
 				except:
 					pass
 			self.stream['fps'] = '%s' % str(fps)
