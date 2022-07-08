@@ -1,9 +1,9 @@
 # Embedded file name: usr\lib\enigma2\python\Components\Converter\MaggyServicePosition.py
 import time
-from Converter import Converter
-from Poll import Poll
-from enigma import iPlayableService
+from enigma import iServiceInformation, iPlayableService
 from Components.Element import cached, ElementError
+from Components.Converter.Converter import Converter
+from Components.Converter.Poll import Poll
 
 class MaggyServicePosition(Poll, Converter, object):
     TYPE_LENGTH = 0
