@@ -1,6 +1,6 @@
 # IsNet Converter
 # Copyright (c) 2boom 2014-22
-# v.0.2-r0
+# v.0.2-r2
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -58,10 +58,12 @@ class IsNet(Poll, Converter, object):
 	
 	def ifUP(self):
 		devname = []
+		devtype = ['et', 'wl', 'ra', 'pp']
 		if fileExists('/proc/net/dev'):
 			for line in open('/proc/net/dev'):
-				if line.strip().startswith('eth') or line.strip().startswith('wl'):
-					devname.append(line.split(':')[0].strip())
+				for i in range(len(devtype)):
+					if line.strip().startswith(devtype[i]):
+						devname.append(line.split(':')[0].strip())
 			for i in range(len(devname)):
 				if fileExists('/sys/class/net/%s/operstate' % devname[i]):
 					if 'up' in open('/sys/class/net/%s/operstate' % devname[i]).read():

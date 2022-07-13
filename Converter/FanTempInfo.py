@@ -1,6 +1,6 @@
 # FanTempInfo Converter
 # Copyright (c) 2boom 2012-22
-# v.0.6-r2
+# v.0.6-r3
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -59,15 +59,20 @@ class FanTempInfo(Poll, Converter, object):
 		elif self.type == self.TempInfo or self.type == self.TxtTempInfo:
 			try:
 				if os.path.exists("/proc/stb/sensors/temp0/value") and os.path.exists("/proc/stb/sensors/temp0/unit"):
-					info = "%s%s%s" % (open("/proc/stb/sensors/temp0/value").read().strip('\n'), unichr(176).encode("latin-1"), open("/proc/stb/sensors/temp0/unit").read().strip('\n'))
+					info = "%s%s%s" % (open("/proc/stb/sensors/temp0/value").read().strip('\n'), chr(176), open("/proc/stb/sensors/temp0/unit").read().strip('\n'))
 				elif os.path.exists("/proc/stb/fp/temp_sensor_avs"):
-					info = "%s%sC" % (open("/proc/stb/fp/temp_sensor_avs").read().strip('\n'), unichr(176).encode("latin-1"))
+					info = "%s%sC" % (open("/proc/stb/fp/temp_sensor_avs").read().strip('\n'), chr(176))
 				elif os.path.exists("/proc/stb/fp/temp_sensor"):
-					info = "%s%sC" % (open("/proc/stb/fp/temp_sensor").read().strip('\n'), unichr(176).encode("latin-1"))
+					info = "%s%sC" % (open("/proc/stb/fp/temp_sensor").read().strip('\n'), chr(176))
 				elif os.path.exists("/sys/devices/virtual/thermal/thermal_zone0/temp"):
-					info = "%s%sC" % (open("/sys/devices/virtual/thermal/thermal_zone0/temp").read()[:2].strip('\n'), unichr(176).encode("latin-1"))
+					info = "%s%sC" % (open("/sys/devices/virtual/thermal/thermal_zone0/temp").read()[:2].strip('\n'), chr(176))
+				elif os.path.exists('/proc/stb/power/avs'):
+					info = "%s%sC" % (open("/proc/stb/power/avs").readline().replace('\n', ''), chr(176))
+				elif os.path.exists("/proc/hisi/msp/pm_cpu"):
+					#info = re.search('temperature = (\d+) degree', open("/proc/hisi/msp/pm_cpu").read()).group(1)
+					info = "%s%sC" % (open("/proc/stb/power/avs").readline().replace('\n', ''), chr(176))
 			except:
-				info = "N/A"
+				pass
 			if info.startswith('0'):
 				info = "N/A"
 			if self.type == self.TxtTempInfo:
