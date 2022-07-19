@@ -24,6 +24,7 @@
 # Version: 2.2 (07.01.2019) remove iptv provname add iptv list /etc/enigma2/iptvprov.list - Vasiliks
 # Version: 2.3 (15.01.2019) add terrestrial description - ikrom
 # Version: 2.4 (19.12.2021) small output fix spaces, fix stream, fix t2,s/s2 output, add channel number %k for t2, fix t2 region name - 2boom
+# Version: 2.5 (19.07.2022) OrbitalPos fix py2 & Py3
 
 from Components.Converter.Converter import Converter
 from enigma import iServiceInformation, iPlayableService, iPlayableServicePtr, eServiceReference, eServiceCenter, eTimer, getBestPlayableServiceReference
@@ -278,7 +279,8 @@ class ServiceName2(Converter, object):
 			elif f == 'O':	# %O - orbital_position (dvb-s/s2)
 				if type == 'DVB-S':
 					x = self.tpdata.get('orbital_position', 0)
-					result += x > 1800 and "%d.%d°W"%((3600-x)/10, (3600-x)%10) or "%d.%d°E"%(x/10, x%10)
+					result += x > 1800 and "%d.%d%sW"%((3600-x)/10, (3600-x)%10, chr(176)) or "%d.%d%sE"%(x/10, x%10, chr(176))
+					
 				elif type == 'DVB-T':
 					x = self.tpdata.get('system', 0)
 					result += x in range(2) and {0:'DVB-T',1:'DVB-T2'}[x] or ''
@@ -379,7 +381,7 @@ class ServiceName2(Converter, object):
 							return _("Internet")
 							
 						else:
-							return orbpos > 1800 and "%d.%d°W"%((3600-orbpos)/10, (3600-orbpos)%10) or "%d.%d°E"%(orbpos/10, orbpos%10)
+							return orbpos > 1800 and "%d.%d%sW"%((3600-orbpos)/10, (3600-orbpos)%10, chr(176)) or "%d.%d%sE"%(orbpos/10, orbpos%10, chr(176))
 		return ""
 
 	def getIPTVProvider(self, refstr):
