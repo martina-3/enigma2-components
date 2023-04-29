@@ -39,7 +39,7 @@ class IsNet(Poll, Converter, object):
 			self.timeout = 1		
 		if self.timeout > 3:
 			self.timeout = 3
-		self.poll_interval = 3000
+		self.poll_interval = 9000
 		self.poll_enabled = True
 
 	@cached
